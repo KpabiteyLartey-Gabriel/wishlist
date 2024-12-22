@@ -1,28 +1,36 @@
 import { View, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
 import { useState } from 'react';
 import { useAuth } from '../../src/context/AuthContext';
-import { Link } from 'expo-router';
+import { Link, router } from 'expo-router';
 
-export default function Login() {
+export default function SignUp() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const { signIn } = useAuth();
+  const { signUp } = useAuth();
 
-  const handleLogin = async () => {
-    if (!email || !password) {
-      Alert.alert('Error', 'Please fill in all fields');
+  const handleSignUp = async () => {
+    if (password !== confirmPassword) {
+      Alert.alert('Error', 'Passwords do not match');
+      return;
+    }
+
+    if (password.length < 6) {
+      Alert.alert('Error', 'Password must be at least 6 characters');
       return;
     }
 
     setLoading(true);
     try {
-      await signIn(email, password);
-    } catch (error: any) {
+      await signUp(email, password);
       Alert.alert(
-        'Login Failed',
-        error.message || 'Please check your credentials and try again'
+        'Success',
+        'Please check your email for verification',
+        [{ text: 'OK', onPress: () => router.push('/login') }]
       );
+    } catch (error: any) {
+      Alert.alert('Error', error.message);
     } finally {
       setLoading(false);
     }
@@ -30,7 +38,7 @@ export default function Login() {
 
   return (
     <View className="flex-1 justify-center p-6 bg-white">
-      <Text className="text-3xl font-bold mb-6 text-center">Welcome Back</Text>
+      <Text className="text-3xl font-bold mb-6 text-center">Create Account</Text>
       
       <TextInput
         className="w-full p-4 border border-gray-300 rounded-lg mb-4"
@@ -43,10 +51,19 @@ export default function Login() {
       />
       
       <TextInput
-        className="w-full p-4 border border-gray-300 rounded-lg mb-6"
+        className="w-full p-4 border border-gray-300 rounded-lg mb-4"
         placeholder="Password"
         value={password}
         onChangeText={setPassword}
+        secureTextEntry
+        editable={!loading}
+      />
+
+      <TextInput
+        className="w-full p-4 border border-gray-300 rounded-lg mb-6"
+        placeholder="Confirm Password"
+        value={confirmPassword}
+        onChangeText={setConfirmPassword}
         secureTextEntry
         editable={!loading}
       />
@@ -55,18 +72,18 @@ export default function Login() {
         className={`w-full p-4 rounded-lg mb-4 ${
           loading ? 'bg-blue-300' : 'bg-blue-500'
         }`}
-        onPress={handleLogin}
+        onPress={handleSignUp}
         disabled={loading}
       >
         <Text className="text-white text-center font-bold">
-          {loading ? 'Signing In...' : 'Sign In'}
+          {loading ? 'Creating Account...' : 'Sign Up'}
         </Text>
       </TouchableOpacity>
       
-      <Link href="/signup" asChild>
+      <Link href="/login" asChild>
         <TouchableOpacity>
           <Text className="text-blue-500 text-center">
-            Don't have an account? Sign up
+            Already have an account? Sign in
           </Text>
         </TouchableOpacity>
       </Link>
